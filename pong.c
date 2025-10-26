@@ -10,7 +10,7 @@
 
 char tela[RESOLUCAO][RESOLUCAO];
 int x = CENTRO, y = CENTRO, xa = CENTRO, ya = CENTRO, dirX = 1, dirY = 1, passos = 0, dir = 0;
-int ch, rodando;
+int ch, rodando = 1;
 int posx = CENTRO, posy = ((RESOLUCAO/10)*2), posxa = CENTRO, dirplat;
 
 int angmax = 2;
@@ -51,10 +51,18 @@ if(ch != ERR)
 	}
 }
 
-if((x - xa) > 0) {for(int i = 0; i<2; i++) {tela[posxa-i][posy] = tela[posxa-i][posy] != '#' ? ' ' : '#';}}
-else if((x - xa) < 0) {for(int i = 0; i<2; i++) {tela[posxa+i+tamplat][posy] = tela[posxa+i+tamplat][posy] != '#' ? ' ' : '#';}}
+if((x - xa) > 0)
+{
+	for(int i = 0; (posxa+i) != posx; i++)
+	{tela[posxa+i][posy] = tela[posxa-i][posy] != '#' ? ' ' : '#';}
+}
+else if((x - xa) <= 0)
+{
+	for(int i = 0; i<2; i++)
+	{tela[posxa+i+tamplat][posy] = tela[posxa+i+tamplat][posy] != '#' ? ' ' : '#';}
+}
 
-for(int i = 0; i < (tamplat-1); i++) {tela[posx+i][posy] = '|';}
+for(int i = 0; i < tamplat; i++) {tela[posx+i][posy] = '|';}
 posxa = posx;
 xa = x; ya= y;
 
