@@ -31,10 +31,11 @@ for (int j = 0; j < RESOLUCAO; j++) { for (int k = 0; k <RESOLUCAO; k++)
 	else {tela[j][k] = ' ';}}
 	}
 
-raw();
+cbreak();
 noecho();
 curs_set(0);
 nodelay(stdscr, TRUE);
+keypad(stdscr, TRUE);
 
 //loop principal
 while(rodando)
@@ -45,24 +46,26 @@ if(ch != ERR)
 {
 	switch(ch)
 	{
-	case 'q': rodando = 0;
-	case 'w': if((tela[posx-2][posy] != '#') && (posx-1 > 0)) {posx -= 2;} else if(tela[posx-1][posy] != '#'){posx -= 1;} break;
-	case 's': if((tela[posx+tamplat+1][posy] != '#') && (posx+tamplat < RESOLUCAO-1)) {posx += 2;} else if(tela[posx+tamplat-1][posy] != '#'){posx += 1;} break;
+	case 27 : rodando = 0; break;
+	case 'w': dirplat = -1; if((posx-1 > 0) && (tela[posx-2][posy] != '#')) {posx -= 2;} else if(tela[posx-1][posy] != '#'){posx -= 1;} break;
+	case 's': dirplat = 1; if((posx+tamplat < RESOLUCAO-1) && (tela[posx+tamplat+1][posy] != '#')) {posx += 2;} else if(tela[posx+tamplat][posy] != '#'){posx += 1;} break;
+	case 'e': tamplat = tela[posx+tamplat][posy] == ' ' ? tamplat+1 : tamplat; break;
+	case 'q': if(tamplat > 1){tamplat--; dirplat = 1; if(tela[posx+tamplat][posy] != '#'){posx += 1;}} break;
 	}
 }
 
-if((x - xa) > 0)
+if(dirplat == 1)
 {
-	for(int i = 0; (posxa+i) != posx; i++)
-	{tela[posxa+i][posy] = tela[posxa-i][posy] != '#' ? ' ' : '#';}
+	for(int i = 0; posxa+i <= posx; i++)
+	{tela[posxa+i][posy] = tela[posxa+i][posy] != '#' ? ' ' : '#';}
 }
-else if((x - xa) <= 0)
+else if(dirplat == -1)
 {
-	for(int i = 0; i<2; i++)
-	{tela[posxa+i+tamplat][posy] = tela[posxa+i+tamplat][posy] != '#' ? ' ' : '#';}
+	for(int i = 0; posxa+tamplat-i >= posxa; i++)
+	{tela[posxa+tamplat-i][posy] = tela[posxa+tamplat-i][posy] != '#' ? ' ' : '#';}
 }
 
-for(int i = 0; i < tamplat; i++) {tela[posx+i][posy] = '|';}
+for(int i = 0; i < tamplat; i++) {tela[posx+i][posy] = tela[posx+i][posy] != '#' ? '|' : '#';}
 posxa = posx;
 xa = x; ya= y;
 
@@ -86,11 +89,14 @@ if(passos == (abs(dirX)+abs(dirY))) {passos = 0;}
 
 tela[xa][ya] = ' '; tela[x][y] = 'o';
 
+
 //print tela
-printw("x : %d y : %d dirX : %d dirY : %d ch : %c \n",x,y,dirX,dirY,ch);
+
+//printw("x : %d y : %d dirX : %d dirY : %d ch : %c \n",x,y,dirX,dirY,ch);
+printw("Sair[esc] cima[w] baixo[s] encolher plataforma[q] extender plataforma[e]\n\n");
 for (int j = 0; j < RESOLUCAO; j++) { for (int k = 0; k <RESOLUCAO; k++) { printw("%c ",tela[j][k]); }printw("\n"); }
 
-refresh();usleep(33000); clear();
+refresh(); usleep(40000); clear();
 }
 endwin();
 return(0);
