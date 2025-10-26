@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <curses.h>
 #include <time.h>
+#include <stdbool.h>
 
 #define RESOLUCAO 50
 #define CENTRO (RESOLUCAO/2)
@@ -10,7 +11,7 @@
 
 char tela[RESOLUCAO][RESOLUCAO];
 int x = CENTRO, y = CENTRO, xa = CENTRO, ya = CENTRO, dirX = 1, dirY = 1, passos = 0, dir = 0;
-int ch;
+int ch; bool apertado = false;
 int posx = CENTRO, posy = ((RESOLUCAO/10)*2),posxa = CENTRO ;
 int main()
 {
@@ -38,11 +39,11 @@ while(1)
 
 
 ch = getch();
-if(ch != ERR)
-{
-if(ch == 'q'){break;}
-if(ch == 'w'){if(tela[posx-2][posy] != '#'){posx -= 1;}}
-if(ch == 's'){if(tela[posx+2][posy] != '#'){posx += 1;}}
+if(ch != ERR) {apertado = true;} else{apertado = false;}
+
+if((ch == 'q') && (apertado == true)) {break;}
+if((ch == 'w') && (apertado == true)){if(tela[posx-2][posy] != '#'){posx -= 1;}}
+if((ch == 's') && (apertado == true)){if(tela[posx+2][posy] != '#'){posx += 1;}}
 }
 tela[posxa-1][posy] = ' '; tela[posxa+1][posy] = ' ';
 tela[posx][posy] = '|'; tela[posx+1][posy] = '|'; tela[posx-1][posy] = '|';
@@ -52,18 +53,18 @@ xa = x; ya= y;
 //checagem de colisao
 
 if(passos < abs(dirX))
-{
+	{
 	dir = dirX < 0 ? -1 : 1;
 	if((tela[x + dir][y] == '#') || (tela[x+dir][y] == '|')) { dirX = dirX < 0 ? ((rand() % 3) + 1) : -((rand() % 3) + 1); passos = 0;} else {x += dir;}
 	passos++;
-}
+	}
 
 if((passos < (abs(dirX) + abs(dirY))) && (passos >= abs(dirX)) )
-{
+	{
 	dir = dirY < 0 ? -1 : 1;
 	if((tela[x][y + dir] == '#') || (tela[x][y+dir] == '|')) { dirY = dirY < 0 ? ((rand() % 3) + 1) : -((rand() % 3) + 1); passos = 0;} else {y += dir;}
 	passos++;
-}
+	}
 if(passos == (abs(dirX)+abs(dirY))) {passos = 0;}
 
 tela[xa][ya] = ' '; tela[x][y] = 'o';
