@@ -14,7 +14,7 @@ int ch, rodando = 1;
 int posx = CENTRO, posy = ((RESOLUCAO/10)*2), posxa = CENTRO, dirplat;
 
 int angmax = 2;
-int tamplat = 3;
+int tamplat = 3, velplat = 2;
 
 int main()
 {
@@ -47,10 +47,14 @@ if(ch != ERR)
 	switch(ch)
 	{
 	case 27 : rodando = 0; break;
-	case 'w': dirplat = -1; if((posx-1 > 0) && (tela[posx-2][posy] != '#')) {posx -= 2;} else if(tela[posx-1][posy] != '#'){posx -= 1;} break;
-	case 's': dirplat = 1; if((posx+tamplat < RESOLUCAO-1) && (tela[posx+tamplat+1][posy] != '#')) {posx += 2;} else if(tela[posx+tamplat][posy] != '#'){posx += 1;} break;
+	case 'w': dirplat = -1;if(posx-velplat<1){posx = 1;}
+				else if((posx-1 > 0) && (tela[posx-velplat][posy] != '#')) {posx -= velplat;} break;
+	case 's': dirplat = 1; if(posx+tamplat+velplat>RESOLUCAO-1){posx = RESOLUCAO-1-tamplat;}
+				else if((posx+tamplat+velplat < RESOLUCAO-1) && (tela[posx+tamplat+velplat][posy] != '#')) {posx += velplat;} break;
 	case 'e': tamplat = tela[posx+tamplat][posy] == ' ' ? tamplat+1 : tamplat; break;
 	case 'q': if(tamplat > 1){tamplat--; dirplat = 1; if(tela[posx+tamplat][posy] != '#'){posx += 1;}} break;
+	case 'a': velplat++;break;
+	case 'd': if(velplat>0) {velplat--;}break;
 	}
 }
 
@@ -92,10 +96,10 @@ tela[xa][ya] = ' '; tela[x][y] = 'o';
 
 //print tela
 
-//printw("x : %d y : %d dirX : %d dirY : %d ch : %c \n",x,y,dirX,dirY,ch);
-printw("Sair[esc] cima[w] baixo[s] encolher plataforma[q] extender plataforma[e]\n\n");
-for (int j = 0; j < RESOLUCAO; j++) { for (int k = 0; k <RESOLUCAO; k++) { printw("%c ",tela[j][k]); }printw("\n"); }
 
+printw("Sair[esc] cima[w] baixo[s] encolher/extender plataforma[q][e] acelerar/desacelerar plataforma[a][d]\n\n");
+for (int j = 0; j < RESOLUCAO; j++) { for (int k = 0; k <RESOLUCAO; k++) { printw("%c ",tela[j][k]); }printw("\n"); }
+printw("\nx : %d y : %d dirX : %d dirY : %d ch : %c velplat : %d ",x,y,dirX,dirY,ch,velplat);
 refresh(); usleep(40000); clear();
 }
 endwin();
