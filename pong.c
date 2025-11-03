@@ -17,8 +17,9 @@ int ch, rodando = 1;
 int posx = CENTRO, posy = ((RESOLUCAO/10)*2), posxa = CENTRO, dirplat;
 
 int angmax = 2;
-int tamplat = 3, velplat = 2;
+int tamplat = 4, velplat = 2;
 int numbolas = 1;
+int pontos = 0;
 
 int main()
 {
@@ -44,6 +45,8 @@ for (int j = 0; j < RESOLUCAO; j++) { for (int k = 0; k <RESOLUCAO; k++)
 	else {tela[j][k] = ' ';}}
 	}
 
+for (int i = (RESOLUCAO/4); i < (RESOLUCAO - (RESOLUCAO/4)); i++) {for (int j = 0; j < (RESOLUCAO/10); j++) {tela[i][j + (RESOLUCAO-(RESOLUCAO/5))] = 'B';}}
+
 cbreak();
 noecho();
 curs_set(0);
@@ -55,6 +58,7 @@ while(rodando)
 {
 bolas[0].ativo = true;
 
+//input
 ch = getch();
 if(ch != ERR)
 {
@@ -73,7 +77,7 @@ if(ch != ERR)
 	case 'c': if(numbolas>1){bolas[numbolas].ativo = false; numbolas--;} else {bolas[1].ativo = false;} break;
 	}
 }
-
+//checagem de colisao e movimento da plataforma
 if(dirplat == 1)
 {
 	for(int i = 0; posxa+i <= posx; i++)
@@ -89,7 +93,7 @@ for(int i = 0; i < tamplat; i++) {tela[posx+i][posy] = tela[posx+i][posy] != '#'
 posxa = posx;
 
 
-//checagem de colisao
+//checagem de colisao e movimento da bola
 for(int i = 0; i < (RESOLUCAO*2); i++)
 {
 	if(bolas[i].ativo == true)
@@ -98,21 +102,28 @@ for(int i = 0; i < (RESOLUCAO*2); i++)
 	if(bolas[i].passos < abs(bolas[i].dirX))
 		{
 		dir = bolas[i].dirX < 0 ? -1 : 1;
-		if(tela[bolas[i].x + dir][bolas[i].y] != ' ')
+		switch(tela[bolas[i].x + dir][bolas[i].y])
 		{
-		bolas[i].dirX = bolas[i].dirX < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0;
+		case '#': bolas[i].dirX = bolas[i].dirX < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; break;
+		case '|': bolas[i].dirX = bolas[i].dirX < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; pontos++; break;
+		case 'B': bolas[i].dirX = bolas[i].dirX < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; tela[bolas[i].x + dir][bolas[i].y] = ' '; pontos++; break;
+		case 'o': bolas[i].dirX = bolas[i].dirX < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; break;
+		case ' ': bolas[i].x += dir; break;
 		}
-		else {bolas[i].x += dir;}
 		bolas[i].passos++;
 		}
 
 	if((bolas[i].passos < (abs(bolas[i].dirX) + abs(bolas[i].dirY))) && (bolas[i].passos >= abs(bolas[i].dirX)) )
 		{
 		dir = bolas[i].dirY < 0 ? -1 : 1;
-		if(tela[bolas[i].x][bolas[i].y + dir] != ' ')
+		switch(tela[bolas[i].x][bolas[i].y + dir])
 		{
-		bolas[i].dirY = bolas[i].dirY < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0;}
-		else {bolas[i].y += dir;}
+		case '#': bolas[i].dirY = bolas[i].dirY < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; break;
+		case '|': bolas[i].dirY = bolas[i].dirY < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; pontos++; break;
+		case 'B': bolas[i].dirY = bolas[i].dirY < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; tela[bolas[i].x][bolas[i].y + dir] = ' '; pontos++; break;
+		case 'o': bolas[i].dirY = bolas[i].dirY < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; break;
+		case ' ': bolas[i].y += dir; break;
+		}
 		bolas[i].passos++;
 		}
 
@@ -134,7 +145,7 @@ for(int i = 0; i < (RESOLUCAO*2); i++)
 
 printw("Sair[esc] cima[w] baixo[s] encolher/extender plataforma[q][e] acelerar/desacelerar plataforma[a][d]\n adicionar/remover bola[f][c]\n\n");
 for (int j = 0; j < RESOLUCAO; j++) { for (int k = 0; k <RESOLUCAO; k++) { printw("%c ",tela[j][k]); }printw("\n"); }
-printw("\nnumbolas : %d ch : %c velplat : %d tamplat : %d",numbolas,ch,velplat,tamplat);
+printw("\nnumbolas : %d ch : %c velplat : %d tamplat : %d pontos : %d",numbolas,ch,velplat,tamplat,pontos);
 refresh(); usleep(40000); clear();
 }
 endwin();
