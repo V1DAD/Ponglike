@@ -72,12 +72,10 @@ if(ch != ERR)
 	switch(ch)
 	{
 	case 27 : rodando = 0; break;
-	case 'w': dirplat = -1;if(posx-velplat<1){posx = 1;}
-				else if((posx-1 > 0) && (tela[posx-velplat][posy] != '#')) {posx -= velplat;} break;
-	case 's': dirplat = 1; if(posx+tamplat+velplat>RESOLUCAO-1){posx = RESOLUCAO-1-tamplat;}
-				else if((posx+tamplat+velplat < RESOLUCAO-1) && (tela[posx+tamplat+velplat][posy] != '#')) {posx += velplat;} break;
+	case 'w': dirplat = -1; break;
+	case 's': dirplat = 1; break;
 	case 'e': tamplat = tela[posx+tamplat][posy] == ' ' ? tamplat+1 : tamplat; break;
-	case 'q': if(tamplat > 1){tamplat--; dirplat = 1; if(tela[posx+tamplat][posy] != '#'){posx += 1;}} break;
+	case 'q': if(tamplat > 1){tela[posx+tamplat-1][posy] = ' ';tamplat--;} break;
 	case 'a': velplat++;break;
 	case 'd': if(velplat>0) {velplat--;}break;
 	case 'f': for(int i = 0; i<MAXBOLAS; i++){if(bolas[i].ativo == false){bolas[i].ativo = true;i = MAXBOLAS+1;}} break;
@@ -85,20 +83,35 @@ if(ch != ERR)
 	}
 }
 //checagem de colisao e movimento da plataforma
+for(int i = 0; i<velplat;i++)
+{
+posxa = posx;
 if(dirplat == 1)
 {
-	for(int i = 0; posxa+i <= posx; i++)
-	{tela[posxa+i][posy] = tela[posxa+i][posy] != '#' ? ' ' : '#';}
+	switch(tela[posx+tamplat][posy])
+	{
+	case ' ': posx += dirplat; break;
+	case '|': posx += dirplat; break;
+	case '#': break;
+	case 'o': posx += dirplat; tamplat = tela[posx+tamplat][posy] == ' ' ? tamplat+1 : tamplat; break;
+	}
+	tela[posxa][posy] = ' ';
 }
 else if(dirplat == -1)
 {
-	for(int i = 0; posxa+tamplat-i >= posxa; i++)
-	{tela[posxa+tamplat-i][posy] = tela[posxa+tamplat-i][posy] != '#' ? ' ' : '#';}
+	switch(tela[posx-1][posy])
+	{
+	case ' ': posx += dirplat; break;
+	case '|': posx += dirplat; break;
+	case '#': break;
+	case 'o': posx += dirplat; tamplat = tela[posx+tamplat][posy] == ' ' ? tamplat+1 : tamplat; break;
+	}
+	tela[posxa+tamplat-1][posy] = ' ';
 }
-
-for(int i = 0; i < tamplat; i++) {tela[posx+i][posy] = tela[posx+i][posy] != '#' ? '|' : '#';}
-posxa = posx;
-
+else {break;}
+}
+dirplat = 0;
+for(int j = 0; j < tamplat; j++) {tela[posx+j][posy] = '|';}
 
 //checagem de colisao e movimento da bola
 for(int i = 0; i < MAXBOLAS ; i++)
