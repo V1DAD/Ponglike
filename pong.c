@@ -8,9 +8,7 @@
 #define RESOLUCAO 50
 #define CENTRO (RESOLUCAO/2)
 
-struct bola {int x, y, xa, ya, dirX, dirY, passos; bool ativo;};
-
-struct bola bolas[MAXBOLAS];
+typedef struct {int x, y, xa, ya, dirX, dirY, passos; bool ativo;} Bola;
 
 char tela[RESOLUCAO][RESOLUCAO];
 int dir = 0;
@@ -22,8 +20,12 @@ int tamplat = 4, velplat = 2;
 int numbolas;
 int pontos = 0;
 
+void inverterDirecaoAleatoria(int *dir,int angmax,int *passos);
+void deteccaoColisaoBola(int *dirEixo,int *eixo,int dir,int *pontos,int angmax, char *proxCasa, Bola *bolaAtual);
+
 int main()
 {
+Bola bolas[MAXBOLAS];
 
 //definir as bolas
 for (int i = 0; i < MAXBOLAS; i++)
@@ -51,6 +53,7 @@ for (int i = (RESOLUCAO/4); i < (RESOLUCAO - (RESOLUCAO/4)); i++) {for (int j = 
 //criar espinhos
 for (int i = 1; i < (RESOLUCAO-1); i++) {tela[i][1] = '^';}
 
+//setup tela
 cbreak();
 noecho();
 curs_set(0);
@@ -120,31 +123,12 @@ for(int i = 0; i < MAXBOLAS ; i++)
 	if((bolas[i].passos < abs(bolas[i].dirX)) && bolas[i].ativo == true)
 		{
 		dir = bolas[i].dirX < 0 ? -1 : 1;
-		switch(tela[bolas[i].x + dir][bolas[i].y])
-		{
-		case '#': bolas[i].dirX = bolas[i].dirX < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; break;
-		case '|': bolas[i].dirX = bolas[i].dirX < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; pontos++; break;
-		case 'B': bolas[i].dirX = bolas[i].dirX < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; tela[bolas[i].x + dir][bolas[i].y] = ' '; pontos++; break;
-		case 'o': bolas[i].dirX = bolas[i].dirX < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; break;
-		case '^': bolas[i].ativo = false;bolas[i].x = CENTRO;bolas[i].y = CENTRO; break;
-		case ' ': bolas[i].x += dir; break;
+		deteccaoColisaoBola(&bolas[i].dirX,&bolas[i].x,dir,&pontos,angmax,&tela[bolas[i].x + dir][bolas[i].y],&bolas[i]);
 		}
-		bolas[i].passos++;
-		}
-
 	if( (bolas[i].passos < (abs(bolas[i].dirX) + abs(bolas[i].dirY))) && (bolas[i].passos >= abs(bolas[i].dirX))&& bolas[i].ativo == true )
 		{
 		dir = bolas[i].dirY < 0 ? -1 : 1;
-		switch(tela[bolas[i].x][bolas[i].y + dir])
-		{
-		case '#': bolas[i].dirY = bolas[i].dirY < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; break;
-		case '|': bolas[i].dirY = bolas[i].dirY < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; pontos++; break;
-		case 'B': bolas[i].dirY = bolas[i].dirY < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; tela[bolas[i].x][bolas[i].y + dir] = ' '; pontos++; break;
-		case 'o': bolas[i].dirY = bolas[i].dirY < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); bolas[i].passos = 0; break;
-		case '^': bolas[i].ativo = false; bolas[i].x = CENTRO; bolas[i].y = CENTRO; break;
-		case ' ': bolas[i].y += dir; break;
-		}
-		bolas[i].passos++;
+		deteccaoColisaoBola(&bolas[i].dirY,&bolas[i].y,dir,&pontos,angmax,&tela[bolas[i].x][bolas[i].y + dir],&bolas[i]);
 		}
 
 	if(bolas[i].passos == (abs(bolas[i].dirX)+abs(bolas[i].dirY))) {bolas[i].passos = 0;}
@@ -170,3 +154,25 @@ refresh(); usleep(40000); clear();
 endwin();
 return(0);
 }
+
+void inverterDirecaoAleatoria(int *dir,int angmax,int *passos)
+{
+*dir = *dir < 0 ? ((rand() % angmax) + 1) : -((rand() % angmax) + 1); *passos = 0;
+}
+
+void deteccaoColisaoBola(int *dirEixo,int *eixo,int dir,int *pontos,int angmax, char *proxCasa, Bola *bolaAtual)
+{
+switch(*proxCasa)
+{
+case '#': inverterDirecaoAleatoria(dirEixo,angmax,&bolaAtual->passos); break;
+case '|': inverterDirecaoAleatoria(dirEixo,angmax,&bolaAtual->passos); *pontos = *pontos + 1;break;
+case 'B': inverterDirecaoAleatoria(dirEixo,angmax,&bolaAtual->passos); *proxCasa = ' '; *pontos = *pontos + 1;break;
+case 'o': inverterDirecaoAleatoria(dirEixo,angmax,&bolaAtual->passos);break;
+case '^': bolaAtual->ativo = false; bolaAtual->x = CENTRO;bolaAtual->y = CENTRO;break;
+case ' ': *eixo += dir;break;
+}
+bolaAtual->passos++;
+}
+
+//tela[bolas[i].x + dir][bolas[i].y]
+//tela[bolas[i].x][bolas[i].y + dir]
