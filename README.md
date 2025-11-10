@@ -1,7 +1,7 @@
 # Ponglike
 pong com mais algumas coisas
 
-compilar com -lncurses
+**compilar com -lncurses**
 
 Mecânicas a serem implementadas:
 <ul>
