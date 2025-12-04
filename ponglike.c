@@ -9,6 +9,7 @@
 #define BARREIRA '#'
 #define BLOCO 'B'
 #define ESPINHO '^'
+#define VAZIO ' '
 
 typedef struct {int x, y, xa, ya, dirx, diry, angmax, tamanho, passos, velocidade, vida; bool ativo; char icone;} Objeto;
 typedef struct {Objeto plataforma[100], bolas[100]; char tela[36][64]; int pontos;} Jogo;
@@ -16,7 +17,7 @@ typedef struct {Objeto plataforma[100], bolas[100]; char tela[36][64]; int ponto
 void definirBolas(Jogo *estadoJogo, int quantidade);
 void iniciarBola(Jogo *estadoJogo, int i);
 void definirTela(Jogo *estadoJogo, int altura, int largura);
-int angRand(int max, bool positivo);
+int angRand(int max, int dir);
 
 Jogo estadoJogo;
 
@@ -33,8 +34,8 @@ void iniciarBola(Jogo *estadoJogo, int i)
 {
 estadoJogo->bolas[i].x = 32; estadoJogo->bolas[i].y = 18; estadoJogo->bolas[i].xa = 1; estadoJogo->bolas[i].ya = 1;
 estadoJogo->bolas[i].angmax = 2; estadoJogo->bolas[i].tamanho = 1; estadoJogo->bolas[i].passos = 0;
-estadoJogo->bolas[i].dirx = angRand(estadoJogo->bolas[i].angmax, true);
-estadoJogo->bolas[i].diry = angRand(estadoJogo->bolas[i].angmax, true);
+estadoJogo->bolas[i].dirx = angRand(estadoJogo->bolas[i].angmax, 1);
+estadoJogo->bolas[i].diry = angRand(estadoJogo->bolas[i].angmax, 1);
 estadoJogo->bolas[i].velocidade = 1; estadoJogo->bolas[i].vida = 1; estadoJogo->bolas[i].ativo = true;
 estadoJogo->bolas[i].icone = 'o';
 }
@@ -51,9 +52,46 @@ void definirTela(Jogo *estadoJogo, int altura, int largura)
 	}
 }
 
-int angRand(int max, bool positivo)
+int angRand(int max, int dir)
 {
 int val = (rand() % max) + 1;
-if(positivo) {return(val);}
-else {return(-(val));}
+if(dir > 0) {return(val);}
+else if(dir < 0){return(-(val));}
+else return 0;
 }
+
+void interacao(Jogo *estadoJogo, char *alvo, Objeto *agente, int *eixo, int *dirEixo)
+{
+int dir = 0; if(*dirEixo > 0) {dir = 1;} else if(*dirEixo < 0) {dir = -1;}
+if((dir != 0) && agente->ativo)
+{
+	switch(*alvo)
+	{
+	case BARREIRA:
+	if(agente->icone == BOLA) {*dirEixo = angRand(agente->angmax, dir);}
+	break;
+	case PLATAFORMA:
+	if(agente->icone == BOLA) {*dirEixo = angRand(agente->angmax, dir);estadoJogo->pontos++;}
+	break;
+	case BOLA:
+	if(agente->icone == BOLA) {*dirEixo = angRand(agente->angmax, dir);}
+	else if(agente->icone == PLATAFORMA) {agente->tamanho++;}
+	break;
+	case ESPINHO:
+	if(agente->icone == BOLA) {*dirEixo = angRand(agente->angmax, dir); agente->vida--;}
+	break;
+	case BLOCO:
+	if(agente->icone == BOLA) {*dirEixo = angRand(agente->angmax, dir);*alvo = VAZIO; estadoJogo->pontos++;}
+	break;
+	case VAZIO:
+	*eixo += dir; break;
+	}
+}
+}
+
+
+
+
+
+
+
