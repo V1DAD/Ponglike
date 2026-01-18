@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdbool.h>
 
-#define MAXBOLAS (RESOLUCAO*2)
+#define MAXBOLAS ((RESOLUCAO-1)*(RESOLUCAO-1))
 #define RESOLUCAO 50
 #define CENTRO (RESOLUCAO/2)
 
@@ -17,26 +17,40 @@ int posx = CENTRO, posy = ((RESOLUCAO/10)*2), posxa = CENTRO, dirplat;
 
 int angmax = 2;
 int tamplat = 4, velplat = 2;
-int numbolas;
+int numbolas = 1;
 int pontos = 0;
 
 void inverterDirecaoAleatoria(int *dir,int angmax,int *passos);
 void deteccaoColisaoBola(int *dirEixo,int *eixo,int dir,int *pontos,int angmax, char *proxCasa, Bola *bolaAtual);
 
+void console(Bola *bolas,char (*tela)[RESOLUCAO], int *numbolas, int *angmax);
+
+void criarBlocos(char (*tela)[RESOLUCAO]);
+void criarEspinhos(char (*tela)[RESOLUCAO]);
+void removerChar(char alvo, char (*tela)[RESOLUCAO]);
+
 int main()
 {
-Bola bolas[MAXBOLAS];
+//setup tela
+initscr();
+cbreak();
+noecho();
+curs_set(0);
+nodelay(stdscr, TRUE);
+keypad(stdscr, TRUE);
 
 //definir as bolas
+Bola bolas[MAXBOLAS];
+
 for (int i = 0; i < MAXBOLAS; i++)
 	{
 	bolas[i].x = CENTRO; bolas[i].y = CENTRO; bolas[i].xa = CENTRO;
 	bolas[i].ya = CENTRO; bolas[i].dirX = 1; bolas[i].dirY = 1;
 	bolas[i].passos = 0; bolas[i].ativo = false;
 	}
+bolas[0].ativo = true;
 
 srand(time(NULL));
-initscr();
 
 //definir a matriz
 for (int j = 0; j < RESOLUCAO; j++) { for (int k = 0; k <RESOLUCAO; k++)
@@ -47,20 +61,8 @@ for (int j = 0; j < RESOLUCAO; j++) { for (int k = 0; k <RESOLUCAO; k++)
 	else if(k == (RESOLUCAO - 1)) {tela[j][k] = '#';}
 	else {tela[j][k] = ' ';}}
 	}
-//criar blocos
-for (int i = (RESOLUCAO/4); i < (RESOLUCAO - (RESOLUCAO/4)); i++) {for (int j = 0; j < (RESOLUCAO/10); j++) {tela[i][j + (RESOLUCAO-(RESOLUCAO/5))] = 'B';}}
 
-//criar espinhos
-for (int i = 1; i < (RESOLUCAO-1); i++) {tela[i][1] = '^';}
-
-//setup tela
-cbreak();
-noecho();
-curs_set(0);
-nodelay(stdscr, TRUE);
-keypad(stdscr, TRUE);
-
-bolas[0].ativo = true;
+console(bolas,tela , &numbolas, &angmax);
 
 //loop principal
 while(rodando)
@@ -83,6 +85,7 @@ if(ch != ERR)
 	case 'd': if(velplat>0) {velplat--;}break;
 	case 'f': for(int i = 0; i<MAXBOLAS; i++){if(bolas[i].ativo == false){bolas[i].ativo = true;i = MAXBOLAS+1;}} break;
 	case 'c': for(int i = MAXBOLAS-1; i>0; i--){if(bolas[i].ativo == true){bolas[i].ativo = false;i = 0;}} break;
+	case 9 : console(bolas,tela , &numbolas, &angmax); break;
 	}
 }
 //checagem de colisao e movimento da plataforma
@@ -174,5 +177,94 @@ case ' ': *eixo += dir;break;
 bolaAtual->passos++;
 }
 
-//tela[bolas[i].x + dir][bolas[i].y]
-//tela[bolas[i].x][bolas[i].y + dir]
+void criarBlocos(char (*tela)[RESOLUCAO])
+{
+for (int i = (RESOLUCAO/4); i < (RESOLUCAO - (RESOLUCAO/4)); i++)
+	{
+	for (int j = 0; j < (RESOLUCAO/10); j++)
+		{
+		if(tela[i][j + (RESOLUCAO-(RESOLUCAO/5))] == ' ')
+		{tela[i][j + (RESOLUCAO-(RESOLUCAO/5))] = 'B';}
+		}
+	}
+}
+
+void criarEspinhos(char (*tela)[RESOLUCAO])
+{
+for (int i = 1; i < (RESOLUCAO-1); i++)
+	{
+	if(tela[i][1] == ' ') {tela[i][1] = '^';}
+	}
+}
+
+void removerChar(char alvo, char (*tela)[RESOLUCAO])
+{
+for (int j = 0; j < RESOLUCAO; j++)
+{
+	for (int k = 0; k <RESOLUCAO; k++)
+	{
+	if(tela[j][k] == alvo){tela[j][k] = ' ';}
+	}
+}
+}
+void console(Bola *bolas,char (*tela)[RESOLUCAO], int *numbolas, int *angmax)
+{
+clear();
+int rodando = 1, posSel = 0, quantbolas = *numbolas;
+bool espinhos = false, blocos = false;
+char opcoes[4] = {'>',' ',' ',' '};
+while(rodando)
+{
+	ch = getch();
+	if(ch != ERR)
+	{
+		switch(ch)
+		{
+		case 27 : rodando = 0; break;
+		case KEY_UP: if(posSel >0){opcoes[posSel] = ' '; posSel--; opcoes[posSel] = '>';} break;
+		case KEY_DOWN: if(posSel <3){opcoes[posSel] = ' '; posSel++; opcoes[posSel] = '>';} break;
+		case ' ': switch(posSel)
+			{
+			case 0: blocos = !blocos; break;
+			case 1: espinhos = !espinhos; break;
+			case 2:
+				echo(); nocbreak(); curs_set(1); nodelay(stdscr, FALSE);
+				printw("quantidade de bolas: "); scanw("%d",&quantbolas);
+				noecho();cbreak(); curs_set(0); nodelay(stdscr, TRUE);
+				break;
+			case 3:
+				echo(); nocbreak(); curs_set(1); nodelay(stdscr, FALSE);
+				printw("angulo maximo das bolas "); scanw("%d",angmax);
+				noecho();cbreak(); curs_set(0);  nodelay(stdscr, TRUE);
+				break;
+			}
+			break;
+		}
+
+	}
+	printw("%c criar blocos: %s \n",opcoes[0],blocos ? "adicionar" : "remover");
+	printw("%c criar espinhos: %s \n",opcoes[1],espinhos ? "adicionar" : "remover");
+	printw("%c quantidade de bolas: %d \n",opcoes[2],quantbolas);
+	printw("%c angulo maximo das bolas: %d \n",opcoes[3],*angmax);
+	refresh(); usleep(40000); clear();
+}
+espinhos ? criarEspinhos(tela) : removerChar('^', tela);
+blocos ? criarBlocos(tela) : removerChar('B', tela);
+while(quantbolas > *numbolas)
+{
+	for(int i = 0; i<MAXBOLAS; i++)
+	{
+		if(bolas[i].ativo == false) {bolas[i].ativo = true;(*numbolas)++;break;}
+	}
+	if(*numbolas == MAXBOLAS) break;
+}
+while(quantbolas < *numbolas)
+{
+	for(int i = MAXBOLAS-1; i>0; i--)
+	{
+		if(bolas[i].ativo == true){bolas[i].ativo = false;(*numbolas)++;break;}
+	}
+	if(*numbolas == 0) break;
+}
+
+}
